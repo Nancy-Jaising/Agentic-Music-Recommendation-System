@@ -7,7 +7,7 @@ def load_and_clean(filepath: str) -> pd.DataFrame:
     """
 
     # ── 1. Load ──────────────────────────────────────────────
-    df = pd.read_csv(filepath)
+    df = pd.read_csv(filepath, encoding='utf-8', encoding_errors='replace')
     print(f"[preprocessor] Loaded: {df.shape[0]} rows, {df.shape[1]} cols")
 
     # ── 2. Drop useless columns ──────────────────────────────

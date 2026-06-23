@@ -31,27 +31,18 @@ COLOR_OPTIONS = {
     "🟡 Golden":        "#FFC107",
 }
 
-# ── Encoding fix ─────────────────────────────────────────────
-def clean_text(text):
-    if not isinstance(text, str):
-        return str(text)
-    try:
-        return text.encode('latin-1').decode('utf-8')
-    except Exception:
-        return text
-
 # ── Pipeline loader ───────────────────────────────────────────
 @st.cache_resource(show_spinner="🎵 Loading music pipeline...")
 def load_pipeline():
     base = os.path.dirname(os.path.abspath(__file__))
     path = os.path.join(base, 'data', 'spotify_tracks.csv')
-    df                      = load_and_clean(path)
+    
+    df = load_and_clean(path)
+        
     X_scaled, scaler, feats = build_feature_matrix(df)
     knn_model               = build_knn_model(X_scaled, n_neighbors=20)
     df_clustered, kmeans, _ = build_clusters(X_scaled, df)
-    for col in ['track_name', 'artists', 'track_genre']:
-        df[col]           = df[col].apply(clean_text)
-        df_clustered[col] = df_clustered[col].apply(clean_text)
+    
     return df, df_clustered, X_scaled, scaler, knn_model, kmeans
 
 # ── URL generators ────────────────────────────────────────────
@@ -71,7 +62,7 @@ def feat_bar(label, value, accent, max_val=1.0):
     <div style="margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;
                   font-size:0.78rem;margin-bottom:3px">
-        <span style="color:#888">{label}</span>
+        <span style="color:#aaa">{label}</span>
         <span style="color:#fff;font-weight:600">{display}</span>
       </div>
       <div style="background:#2a2a2a;border-radius:4px;height:6px;width:100%">
@@ -97,7 +88,7 @@ def feat_bar_light(label, value, accent, max_val=1.0):
     </div>"""
 
 # ════════════════════════════════════════════════════════════════
-# SIDEBAR
+# SIDEBAR CONTROL
 # ════════════════════════════════════════════════════════════════
 with st.sidebar:
     st.markdown("### 🎨 Theme")
@@ -113,12 +104,12 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 💡 Example Queries")
     examples = [
-        "Energetic workout songs",
-        "Chill acoustic for studying",
-        "Sad romantic bollywood",
-        "Fast EDM party songs",
-        "Classical piano for focus",
-        "Happy pop for morning",
+    "Lofi night music",
+    "Chill acoustic for studying",
+    "Sad romantic songs",
+    "Fast EDM party songs",
+    "Classical piano for focus",
+    "Happy pop for morning",
     ]
     for ex in examples:
         st.markdown(f"• *{ex}*")
@@ -130,8 +121,8 @@ if dark_mode:
     BG3      = "#222222"
     BORDER   = "#2a2a2a"
     TEXT1    = "#ffffff"
-    TEXT2    = "#b3b3b3"
-    TEXT3    = "#888888"
+    TEXT2    = "#e0e0e0"
+    TEXT3    = "#aaaaaa"
     INPUT_BG = "#1a1a1a"
     CARD_BG  = "#1a1a1a"
     EXP_BG   = "#0d1f0d"
@@ -151,16 +142,70 @@ else:
 accent_light = accent + "22"
 accent_mid   = accent + "55"
 
-# ── Inject CSS ────────────────────────────────────────────────
+# ── Inject Precise CSS ────────────────────────────────────────
 st.markdown(f"""
 <style>
+  /* Base Application Global Theme */
   .stApp {{ background-color: {BG}; color: {TEXT1}; }}
+  
+  /* Sidebar Container Structure */
   section[data-testid="stSidebar"] {{
       background-color: {BG2} !important;
       border-right: 1px solid {BORDER};
   }}
-  section[data-testid="stSidebar"] * {{ color: {TEXT1} !important; }}
+  /* This specific addition forces widget labels (Accent color, Dark mode, etc.) to remain visible */
+  section[data-testid="stSidebar"] label[data-testid="stWidgetLabel"] p {{
+      color: {TEXT1} !important;
+  }}
+  section[data-testid="stSidebar"] .stMarkdown p {{
+      color: {TEXT1} !important;
+  }}
+  section[data-testid="stSidebar"] h3 {{
+      color: {TEXT1} !important;
+  }}
 
+  /* CRITICAL: Fix Selectbox White Invisible Text in Dark Mode & Fix Dropdown Options */
+  div[data-testid="stSelectbox"] div[data-baseweb="select"] > div {{
+      background-color: {INPUT_BG} !important;
+      color: {TEXT1} !important;
+      border: 1px solid {BORDER} !important;
+  }}
+  div[data-testid="stSelectbox"] svg {{
+      fill: {TEXT1} !important;
+  }}
+  /* Dropdown expanded popover visibility fix */
+  ul[role="listbox"] {{
+      background-color: {BG2} !important;
+  }}
+  ul[role="listbox"] li {{
+      color: {TEXT1} !important;
+      background-color: transparent !important;
+  }}
+  ul[role="listbox"] li:hover {{
+      background-color: {accent_light} !important;
+  }}
+
+  /* CRITICAL: Safe Slider styling (Prevents huge solid block anomalies) */
+  .stSlider div[data-baseweb="slider"] {{
+      background-color: transparent !important;
+  }}
+  .stSlider [data-testid="stMetricValue"] {{
+      color: {accent} !important;
+  }}
+  /* Track Highlight Color */
+  .stSlider div[role="slider"] div[style*="left: 0%"] {{
+      background: {accent} !important;
+  }}
+
+  /* CRITICAL: Safe Toggle Switch Background handling */
+  div[data-testid="stCheckbox"] button[role="switch"][aria-checked="true"] {{
+      background-color: {accent} !important;
+  }}
+  div[data-testid="stCheckbox"] button[role="switch"][aria-checked="false"] {{
+      background-color: {TEXT3} !important;
+  }}
+
+  /* Main Input Elements */
   .stTextInput > div > div > input {{
       background-color: {INPUT_BG} !important;
       border: 2px solid {accent} !important;
@@ -171,6 +216,7 @@ st.markdown(f"""
   }}
   .stTextInput > div > div > input::placeholder {{ color: {TEXT3} !important; }}
 
+  /* Buttons */
   .stButton > button {{
       background: {accent} !important;
       color: white !important; font-weight: 700 !important;
@@ -180,6 +226,7 @@ st.markdown(f"""
   }}
   .stButton > button:hover {{ opacity: 0.88 !important; }}
 
+  /* Text Branding Structure */
   .main-title {{
       font-size: 2.6rem; font-weight: 800;
       background: linear-gradient(135deg, {accent}, {TEXT1});
@@ -187,6 +234,7 @@ st.markdown(f"""
   }}
   .sub-title {{ color: {TEXT2}; font-size:0.9rem; margin-top:2px; margin-bottom:20px; }}
 
+  /* Metric Cards Layout */
   .metric-card {{
       background: {BG2}; border: 1px solid {BORDER};
       border-radius: 14px; padding: 16px;
@@ -195,6 +243,7 @@ st.markdown(f"""
   .metric-label {{ color:{TEXT2}; font-size:0.72rem; text-transform:uppercase; letter-spacing:1px; }}
   .metric-value {{ color:{accent}; font-size:1.5rem; font-weight:800; }}
 
+  /* Recommendations Output Display */
   .track-card {{
       background: {CARD_BG}; border: 1px solid {BORDER};
       border-radius: 16px; padding: 20px 22px;
@@ -229,27 +278,18 @@ st.markdown(f"""
       transition: opacity 0.2s;
   }}
   .link-btn:hover {{ opacity:0.8; }}
-  .spotify-btn {{
-      background:#1DB954; color:#fff !important;
-  }}
-  .youtube-btn {{
-      background:#FF0000; color:#fff !important;
-  }}
+  .spotify-btn {{ background:#1DB954; color:#fff !important; }}
+  .youtube-btn {{ background:#FF0000; color:#fff !important; }}
   hr {{ border-color:{BORDER} !important; }}
 </style>
 """, unsafe_allow_html=True)
 
-# ════════════════════════════════════════════════════════════════
-# HEADER
-# ════════════════════════════════════════════════════════════════
+# ── Header Layout ─────────────────────────────────────────────
 st.markdown(f'<div class="main-title">🎵 Music Recommender</div>', unsafe_allow_html=True)
 st.markdown(f'<div class="sub-title">Agentic AI • KNN + Cosine Similarity + K-Means • '
             f'<span style="color:{accent}">■</span> {accent_label}</div>', unsafe_allow_html=True)
 
 df, df_clustered, X_scaled, scaler, knn_model, kmeans = load_pipeline()
-
-with st.sidebar:
-    st.markdown(f"**📊 Dataset:** {len(df):,} tracks")
 
 # ════════════════════════════════════════════════════════════════
 # SEARCH
@@ -298,7 +338,7 @@ if recommend_btn:
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown(f"### 🧠 Agent Detected Intent")
     if use_clustering:
-        st.markdown(f"Mood cluster: **{mood_label}**")
+        st.markdown(f'Mood cluster: <span style="color:{accent}; font-weight:700; font-size:1.1rem;">{mood_label}</span>', unsafe_allow_html=True)
 
     cols = st.columns(5)
     metrics = [
@@ -313,7 +353,7 @@ if recommend_btn:
         col.markdown(f"""
         <div class="metric-card">
           <div class="metric-label">{label}</div>
-          <div class="metric-value">{display}</div>
+          <div class="metric-value" style="color:{accent} !important;">{display}</div>
         </div>""", unsafe_allow_html=True)
 
     # ── Track cards ───────────────────────────────────────────
@@ -324,9 +364,9 @@ if recommend_btn:
     bar_fn = feat_bar if dark_mode else feat_bar_light
 
     for i, (_, row) in enumerate(results.iterrows()):
-        t_name   = clean_text(str(row['track_name']))
-        t_artist = clean_text(str(row['artists']))
-        t_genre  = clean_text(str(row['track_genre']))
+        t_name   = str(row['track_name'])
+        t_artist = str(row['artists'])
+        t_genre  = str(row['track_genre'])
 
         sp_url = spotify_url(t_name, t_artist)
         yt_url = youtube_url(t_name, t_artist)
@@ -337,15 +377,15 @@ if recommend_btn:
             st.markdown(f"""
             <div class="track-card">
               <div>
-                <span class="track-number">#{i+1}</span>
+                <span class="track-number" style="color:{accent} !important;">#{i+1}</span>
                 <span class="track-name">{t_name}</span>
               </div>
               <div class="track-artist">🎤 {t_artist}</div>
-              <div class="track-genre">{t_genre}</div>
+              <div class="track-genre" style="background:{accent_light}; color:{accent}; border-color:{accent_mid};">{t_genre}</div>
               <div style="margin-top:12px">
-                <span class="score-badge">Match: {row['final_score']:.3f}</span>
+                <span class="score-badge" style="background:{accent_light}; color:{accent};">Match: {row['final_score']:.3f}</span>
                 <span style="color:{TEXT3};font-size:0.78rem;margin-left:10px">
-                  Popularity: {int(row['popularity'])}/100
+                  Popularity: {int(row.get('popularity', 0))}/100
                 </span>
               </div>
               <div>
@@ -356,30 +396,24 @@ if recommend_btn:
                   ▶ Watch on YouTube
                 </a>
               </div>
-              <div class="exp-box">🤖 {explanations[i]}</div>
+              <div class="exp-box" style="border-left-color:{accent};">🤖 {explanations[i]}</div>
             </div>""", unsafe_allow_html=True)
 
         with c2:
+            track_energy   = row.get('energy', user_features.get("energy", 0.5))
+            track_dance    = row.get('danceability', user_features.get("danceability", 0.5))
+            track_valence  = row.get('valence', user_features.get("valence", 0.5))
+            track_acoustic = row.get('acousticness', user_features.get("acousticness", 0.5))
+            track_tempo    = row.get('tempo', user_features.get("tempo", 120.0))
+
             st.markdown(f"""
             <div class="track-card">
               <div style="font-size:0.75rem;color:{TEXT3};
                           text-transform:uppercase;letter-spacing:1px;
                           margin-bottom:14px">Audio Features</div>
-              {bar_fn("⚡ Energy",        row['energy'],        accent)}
-              {bar_fn("💃 Danceability",  row['danceability'],  accent)}
-              {bar_fn("😊 Valence",       row['valence'],       accent)}
-              {bar_fn("🎸 Acousticness",  row['acousticness'],  accent)}
-              {bar_fn("🥁 Tempo",         row['tempo'],         accent, max_val=220)}
+              {bar_fn("⚡ Energy",        track_energy,   accent)}
+              {bar_fn("💃 Danceability",  track_dance,    accent)}
+              {bar_fn("😊 Valence",       track_valence,  accent)}
+              {bar_fn("🎸 Acousticness",  track_acoustic, accent)}
+              {bar_fn("🥁 Tempo",         track_tempo,    accent, max_val=220)}
             </div>""", unsafe_allow_html=True)
-
-    # ── Download + raw table ──────────────────────────────────
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.download_button(
-        f"⬇️ Download CSV",
-        data=results.to_csv(index=False),
-        file_name="recommendations.csv",
-        mime="text/csv",
-        use_container_width=True
-    )
-    with st.expander("📊 Raw Data Table"):
-        st.dataframe(results, use_container_width=True)
