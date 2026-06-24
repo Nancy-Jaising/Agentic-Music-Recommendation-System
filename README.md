@@ -1,4 +1,8 @@
 # 🎵 Agentic Music Recommendation System
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://agentic-music-recommendation-system-rwiw8krkyzshtharcgz9ov.streamlit.app/)
+> 🚀 **Live Demo:** Try out the web application instantly without downloading any code here: [Agentic Music Recommender App](https://agentic-music-recommendation-system-rwiw8krkyzshtharcgz9ov.streamlit.app/)
+
+---
 
 ![Python](https://img.shields.io/badge/Python-3.11-blue?style=for-the-badge)
 ![Streamlit](https://img.shields.io/badge/Streamlit-App-red?style=for-the-badge)
